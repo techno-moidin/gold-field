@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+@theme {
+  /* Gilded Vault Core Tokens */
+  --color-gold-50: #fdfaf1;
+  --color-gold-100: #f9f2d4;
+  --color-gold-200: #f2e3a1;
+  --color-gold-300: #e9cc65;
+  --color-gold-400: #dfaf37; /* Primary Gold */
+  --color-gold-500: #c5982e;
+  --color-gold-600: #a37923;
+  --color-gold-700: #82601c;
+  --color-gold-800: #624817;
+  --color-gold-900: #493613;
+  --color-gold-950: #2b1f09;
+
+  /* Stitch Sync */
+  --color-background: #0b1326;
+  --color-surface: #0b1326;
+  --color-surface-low: #131b2e;
+  --color-surface-container: #171f33;
+  --color-surface-container-high: #222a3d;
+  --color-surface-container-highest: #2d3449;
+  
+  --color-emerald-500: #22c55e;
+  --color-red-500: #ef4444;
+
+  --font-inter: "Inter", sans-serif;
+}
+
+:root {
+  font-family: var(--font-inter);
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: #f8fafc;
+  background-color: var(--color-background);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-content: center;
+  min-width: 320px;
+  min-height: 100vh;
+  /* Premium Gilded Vault Background */
+  background: 
+    linear-gradient(rgba(11, 19, 38, 0.9), rgba(11, 19, 38, 0.9)),
+    url('/assets/vault_texture.png');
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center;
+}
+
+#root {
+  width: 100%;
+}
+
+/* Tonal Layering Utilities */
+.tonal-surface {
+  background-color: var(--color-surface);
+  box-shadow: none;
+}
+
+.tonal-surface-low {
+  background-color: var(--color-surface-low);
+}
+
+.tonal-surface-high {
+  background-color: var(--color-surface-high);
+}
+
+.glass {
+  background: rgba(30, 41, 59, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.gold-glow {
+  box-shadow: 0 0 30px rgba(223, 175, 55, 0.15);
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #f2e3a1 0%, #dfaf37 50%, #a37923 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Financial Micro-typography */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
