@@ -17,9 +17,9 @@ export function SignalBadge({ type, confidence, size = 'sm' }: SignalBadgeProps)
   const getStyles = () => {
     switch (type) {
       case SignalType.BUY: 
-        return 'bg-emerald-500 text-slate-900 shadow-[0_0_20px_rgba(34,197,94,0.3)]';
+        return 'bg-green-500 text-slate-900 shadow-[0_0_20px_rgba(34,197,94,0.3)]';
       case SignalType.WAIT: 
-        return 'bg-gold-400 text-slate-900 shadow-[0_0_20px_rgba(223,175,55,0.3)]';
+        return 'bg-amber-500 text-slate-900 shadow-[0_0_20px_rgba(245,158,11,0.3)]';
       case SignalType.AVOID: 
         return 'bg-red-500 text-white shadow-[0_0_20px_rgba(239,68,68,0.3)]';
       default: 

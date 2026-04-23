@@ -7,10 +7,12 @@ interface AppState {
   selectedRegion: Region;
   selectedPurity: GoldPurity;
   isDarkMode: boolean;
+  isMaintenanceMode: boolean;
   
   setRegion: (region: Region) => void;
   setPurity: (purity: GoldPurity) => void;
   toggleDarkMode: () => void;
+  setMaintenanceMode: (status: boolean) => void;
 }
 
 export const useStore = create<AppState>()(
@@ -19,10 +21,12 @@ export const useStore = create<AppState>()(
       selectedRegion: Region.UAE,
       selectedPurity: GoldPurity.GOLD_24K,
       isDarkMode: true,
+      isMaintenanceMode: false,
 
       setRegion: (region) => set({ selectedRegion: region }),
       setPurity: (purity) => set({ selectedPurity: purity }),
       toggleDarkMode: () => set((state) => ({ isDarkMode: !state.isDarkMode })),
+      setMaintenanceMode: (status) => set({ isMaintenanceMode: status }),
     }),
     {
       name: 'gold-field-storage',

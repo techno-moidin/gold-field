@@ -1,28 +1,20 @@
 @import "tailwindcss";
 
 @theme {
-  /* Gilded Vault Core Tokens */
-  --color-gold-50: #fdfaf1;
-  --color-gold-100: #f9f2d4;
-  --color-gold-200: #f2e3a1;
-  --color-gold-300: #e9cc65;
-  --color-gold-400: #dfaf37; /* Primary Gold */
-  --color-gold-500: #c5982e;
-  --color-gold-600: #a37923;
-  --color-gold-700: #82601c;
-  --color-gold-800: #624817;
-  --color-gold-900: #493613;
-  --color-gold-950: #2b1f09;
-
-  /* Stitch Sync */
+  /* Gilded Vault Core Tokens - Synced with Stitch project 18254344533835817335 */
+  --color-primary: #f2ca50;
+  --color-on-primary: #3c2f00;
   --color-background: #0b1326;
   --color-surface: #0b1326;
-  --color-surface-low: #131b2e;
+  --color-surface-container-lowest: #060e20;
+  --color-surface-container-low: #131b2e;
   --color-surface-container: #171f33;
   --color-surface-container-high: #222a3d;
   --color-surface-container-highest: #2d3449;
+  --color-on-surface: #dae2fd;
+  --color-on-surface-variant: #d0c5af;
   
-  --color-emerald-500: #22c55e;
+  --color-green-500: #22c55e;
   --color-red-500: #ef4444;
 
   --font-inter: "Inter", sans-serif;
@@ -62,18 +54,17 @@ body {
   width: 100%;
 }
 
-/* Tonal Layering Utilities */
+/* Tonal Layering Utilities - Aligned with CSS Variable Names */
 .tonal-surface {
   background-color: var(--color-surface);
-  box-shadow: none;
 }
 
 .tonal-surface-low {
-  background-color: var(--color-surface-low);
+  background-color: var(--color-surface-container-low);
 }
 
 .tonal-surface-high {
-  background-color: var(--color-surface-high);
+  background-color: var(--color-surface-container-high);
 }
 
 .glass {
@@ -84,11 +75,11 @@ body {
 }
 
 .gold-glow {
-  box-shadow: 0 0 30px rgba(223, 175, 55, 0.15);
+  box-shadow: 0 0 30px rgba(242, 202, 80, 0.15); /* Using #f2ca50 */
 }
 
 .text-gradient-gold {
-  background: linear-gradient(135deg, #f2e3a1 0%, #dfaf37 50%, #a37923 100%);
+  background: linear-gradient(135deg, #f2e3a1 0%, #f2ca50 50%, #b4941f 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -97,3 +88,33 @@ body {
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
+
+/* Material Symbols Sync */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+}
+
+/* Animations from Stitch Advice */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* No Scrollbar Utility */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+

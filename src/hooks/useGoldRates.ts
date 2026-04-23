@@ -1,26 +1,38 @@
 // src/hooks/useGoldRates.ts
 import { useQuery } from '@tanstack/react-query';
-import { mockApi } from '../lib/api';
+import { api } from '../lib/api';
+import { useStore } from '../store/useStore';
 
 export function useLiveRates() {
-  return useQuery({
+  const { selectedPurity } = useStore();
+  
+  const query = useQuery({
     queryKey: ['liveRates'],
-    queryFn: () => mockApi.getLiveRates(),
-    refetchInterval: 60000, // Refresh every minute for the demo
+    queryFn: () => api.getLiveRates(), // Fetch ALL rates (all regions, all purities)
+    refetchInterval: 60000,
+    placeholderData: (previousData) => previousData,
   });
+
+  // Filter client-side by selected purity so we keep all regions visible
+  const filtered = Array.isArray(query.data)
+    ? query.data.filter((r) => r.purity === selectedPurity)
+    : [];
+
+  return { ...query, data: filtered };
 }
 
 export function useTodaySignal() {
   return useQuery({
     queryKey: ['todaySignal'],
-    queryFn: () => mockApi.getTodaySignal(),
-    staleTime: 1000 * 60 * 60, // 1 hour
+    queryFn: () => api.getTodaySignal(),
+    refetchInterval: 3600000, // 1 hour
   });
 }
 
 export function useMarketSummary() {
   return useQuery({
     queryKey: ['marketSummary'],
-    queryFn: () => mockApi.getMarketSummary(),
+    queryFn: () => api.getMarketSummary(),
+    refetchInterval: 300000, // 5 minutes
   });
 }

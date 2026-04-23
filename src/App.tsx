@@ -1,32 +1,60 @@
-// src/App.tsx
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HomeScreen } from './screens/HomeScreen';
 import { SignalScreen } from './screens/SignalScreen';
 import { AlertsScreen } from './screens/AlertsScreen';
 import { UAEMarketScreen } from './screens/UAEMarketScreen';
-import { useState } from 'react';
-import { Home, LineChart, Bell, PieChart, Settings, Search, User } from 'lucide-react';
+import { MaintenanceScreen } from './screens/MaintenanceScreen';
+import { useStore } from './store/useStore';
+import { useState, useEffect } from 'react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { api } from './lib/api';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const queryClient = new QueryClient({
+// Global QueryClient
+const rootQueryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      refetchInterval: 1000 * 60 * 5,
-      retry: 2,
+      retry: 1, // Minimize retries to trigger maintenance mode faster
+      staleTime: 30000,
     },
   },
 });
 
 type ScreenId = 'home' | 'signal' | 'alerts' | 'uae';
 
-export default function App() {
+function AppContent() {
   const [activeScreen, setActiveScreen] = useState<ScreenId>('home');
+  const { isMaintenanceMode, setMaintenanceMode } = useStore();
+
+  // Background health check when in maintenance mode
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    
+    if (isMaintenanceMode) {
+      // Periodic check every 5 seconds
+      interval = setInterval(async () => {
+        try {
+          await api.getLiveRates();
+          // If successful, reset maintenance mode
+          setMaintenanceMode(false);
+        } catch (e) {
+          // Still down
+        }
+      }, 5000);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isMaintenanceMode, setMaintenanceMode]);
+
+  if (isMaintenanceMode) {
+    return <MaintenanceScreen />;
+  }
 
   const renderScreen = () => {
     switch (activeScreen) {
@@ -39,101 +67,133 @@ export default function App() {
   };
 
   const navItems = [
-    { id: 'home', label: 'Rates', icon: Home },
-    { id: 'signal', label: 'Analysis', icon: LineChart },
-    { id: 'uae', label: 'UAE Market', icon: PieChart },
-    { id: 'alerts', label: 'Alerts', icon: Bell },
+    { id: 'home', label: 'Markets', icon: 'dashboard' },
+    { id: 'alerts', label: 'Details', icon: 'analytics' },
+    { id: 'signal', label: 'Signals', icon: 'query_stats' },
+    { id: 'uae', label: 'UAE Vault', icon: 'account_balance' },
   ];
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-background flex flex-col md:flex-row">
+    <div className="min-h-screen bg-background text-on-surface font-['Inter'] antialiased selection:bg-primary/30 selection:text-primary transition-colors duration-500">
+      {/* TopNavBar */}
+      <header className="bg-slate-950/80 backdrop-blur-xl tracking-tight top-0 sticky z-50 shadow-2xl shadow-black/40 flex justify-between items-center w-full px-6 py-4 border-b border-white/5">
+        <div className="flex items-center gap-4">
+          <span className="text-2xl font-black italic tracking-tighter text-amber-400 uppercase">Gold Field</span>
+        </div>
         
-        {/* Sidebar - Desktop */}
-        <aside className="hidden md:flex flex-col w-24 h-screen fixed left-0 top-0 tonal-surface border-r border-white/5 z-50 py-8 items-center justify-between">
-           <div className="flex flex-col items-center gap-12 w-full">
-              {/* Logo */}
-              <div className="w-12 h-12 rounded-2xl bg-gold-400 shadow-[0_0_20px_rgba(223,175,55,0.4)] flex items-center justify-center font-black text-slate-900 text-xl italic">
-                G
-              </div>
+        <div className="hidden md:flex flex-1 max-w-md mx-8">
+          <div className="w-full relative group">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+            <input 
+              className="w-full bg-slate-900 border-none rounded-xl py-2 pl-10 pr-4 text-sm text-slate-200 focus:ring-1 focus:ring-amber-400/50 transition-all outline-none" 
+              placeholder="Search markets..." 
+              type="text"
+            />
+          </div>
+        </div>
 
-              {/* Nav Links */}
-              <nav className="flex flex-col gap-8 w-full items-center">
-                 {navItems.map((item) => (
-                   <button
-                     key={item.id}
-                     onClick={() => setActiveScreen(item.id as ScreenId)}
-                     className={cn(
-                       "relative p-3 rounded-2xl transition-all duration-300 group",
-                       activeScreen === item.id ? "text-gold-400 bg-gold-400/10" : "text-slate-500 hover:text-slate-300 hover:bg-white/5"
-                     )}
-                   >
-                     <item.icon size={24} strokeWidth={activeScreen === item.id ? 2.5 : 2} />
-                     {activeScreen === item.id && (
-                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-gold-400 rounded-l-full shadow-[0_0_10px_rgba(223,175,55,0.5)]" />
-                     )}
-                     
-                     {/* Tooltip */}
-                     <span className="absolute left-full ml-4 px-3 py-1.5 rounded-lg bg-slate-800 text-[10px] font-black uppercase text-gold-400 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 border border-white/5 shadow-2xl">
-                        {item.label}
-                     </span>
-                   </button>
-                 ))}
-              </nav>
-           </div>
+        <div className="flex items-center gap-5">
+          <button className="text-slate-400 hover:text-amber-200 transition-colors duration-200 active:scale-95">
+            <span className="material-symbols-outlined">notifications</span>
+          </button>
+          <button className="text-slate-400 hover:text-amber-200 transition-colors duration-200 active:scale-95">
+            <span className="material-symbols-outlined">settings</span>
+          </button>
+          <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-amber-500 to-amber-200 p-0.5">
+            <div className="h-full w-full rounded-full bg-slate-950 flex items-center justify-center overflow-hidden">
+              <img 
+                alt="User profile" 
+                className="object-cover h-full w-full" 
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8tCByn9TgiCLz25uRPPPconVrTDUV-IyvKabJ6IGTK6nH2eguz9_2bMGvtD74GPzKc0PtElmpqyhTjrcZX7VMfppJc_3VLNcG5S7DBUbZJVIx5Tt10Ys2CAnt5-g8So_0YSNLAda3O9RSQeLIlLadkfQo_x91Qy7qfcYTQIjzgXqNZDi2t8dNt163T8zpS1huXMtQYAP6ij2RRafD2BiQTYcWUXadWWxuJVQTVphiWonZ_-D0jfyVp8vARfCq-Lc0dNS56as0JRBC"
+              />
+            </div>
+          </div>
+        </div>
+      </header>
 
-           <div className="flex flex-col gap-6 items-center">
-              <button className="text-slate-500 hover:text-slate-300 transition-colors"><Settings size={20} /></button>
-              <div className="w-10 h-10 rounded-full border border-white/10 p-0.5 bg-slate-800">
-                 <div className="w-full h-full rounded-full bg-slate-700 flex items-center justify-center text-slate-400">
-                    <User size={18} />
-                 </div>
-              </div>
-           </div>
+      <div className="flex min-h-screen">
+        {/* SideNavBar */}
+        <aside className="bg-slate-950 h-screen w-64 hidden md:flex flex-col fixed left-0 top-0 pt-20 border-r border-slate-800/20 text-sm uppercase tracking-widest z-40">
+          <div className="px-6 py-8 flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+              <span className="material-symbols-outlined text-amber-500" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance</span>
+            </div>
+            <div>
+              <h2 className="text-amber-500 font-bold tracking-normal leading-tight normal-case">Gold Field</h2>
+              <p className="text-[10px] text-slate-500 tracking-wider">Premium Terminal</p>
+            </div>
+          </div>
+
+          <nav className="flex-1 px-4 space-y-2 mt-4">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveScreen(item.id as ScreenId)}
+                className={cn(
+                  "w-full flex items-center gap-3 px-4 py-3 transition-all duration-200 outline-none",
+                  activeScreen === item.id 
+                    ? "text-amber-400 border-r-4 border-amber-500 bg-slate-900/50" 
+                    : "text-slate-500 hover:text-slate-200 hover:bg-slate-900"
+                )}
+              >
+                <span className="material-symbols-outlined">{item.icon}</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest">{item.label}</span>
+              </button>
+            ))}
+          </nav>
+
+          <div className="px-4 py-6 mt-auto space-y-2">
+            <div className="p-4 rounded-xl bg-gradient-to-br from-amber-500/20 to-transparent border border-amber-500/10 mb-6">
+              <p className="text-[10px] text-amber-400 font-bold mb-2 uppercase tracking-widest text-center">PRO ACCESS</p>
+              <button className="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary py-2 rounded-lg text-xs font-bold hover:brightness-110 transition-all uppercase tracking-widest">
+                Trade Now
+              </button>
+            </div>
+            
+            <button className="w-full flex items-center gap-3 px-4 py-2 text-slate-500 hover:text-slate-200 transition-all outline-none">
+              <span className="material-symbols-outlined text-sm">help</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest">Support</span>
+            </button>
+            <button className="w-full flex items-center gap-3 px-4 py-2 text-slate-500 hover:text-slate-200 transition-all outline-none">
+              <span className="material-symbols-outlined text-sm">settings</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest">Settings</span>
+            </button>
+          </div>
         </aside>
 
-        {/* Header - Mobile */}
-        <header className="md:hidden flex justify-between items-center p-6 border-b border-white/5 tonal-surface-low z-40 sticky top-0 backdrop-blur-md">
-           <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-gold-400 flex items-center justify-center font-black text-slate-900 text-sm">G</div>
-              <h1 className="text-lg font-black text-slate-100 tracking-tight italic">Gold Field</h1>
-           </div>
-           <div className="flex gap-4">
-              <button className="text-slate-500- p-1"><Search size={20} /></button>
-              <button className="text-slate-500 p-1"><User size={20} /></button>
-           </div>
-        </header>
-
         {/* Main Content Area */}
-        <main className="flex-1 md:ml-24 pb-32 md:pb-12 min-h-screen overflow-x-hidden">
-           <div className="max-w-7xl mx-auto px-6 pt-10 md:pt-12">
-              {renderScreen()}
-           </div>
+        <main className="flex-1 md:ml-64 p-6 md:p-10 min-h-screen">
+          {renderScreen()}
         </main>
-
-        {/* Bottom Nav - Mobile */}
-        <nav className="md:hidden fixed bottom-6 left-6 right-6 z-50">
-           <div className="glass rounded-3xl h-20 px-4 flex items-center justify-around border border-white/10 shadow-2xl">
-              {navItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveScreen(item.id as ScreenId)}
-                  className={cn(
-                    "flex flex-col items-center gap-1.5 transition-all duration-300 relative",
-                    activeScreen === item.id ? "text-gold-400 -translate-y-1" : "text-slate-500"
-                  )}
-                >
-                  <item.icon size={22} strokeWidth={activeScreen === item.id ? 2.5 : 2} />
-                  <span className="text-[9px] font-black uppercase tracking-widest">{item.label}</span>
-                  {activeScreen === item.id && (
-                    <div className="absolute -bottom-3 w-1.5 h-1.5 rounded-full bg-gold-400 shadow-[0_0_10px_rgba(223,175,55,1)]" />
-                  )}
-                </button>
-              ))}
-           </div>
-        </nav>
-
       </div>
+
+      {/* Bottom Nav - Mobile Only */}
+      <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-slate-950/90 backdrop-blur-lg rounded-t-xl border-t border-amber-900/20 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+        {navItems.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => setActiveScreen(item.id as ScreenId)}
+            className={cn(
+              "flex flex-col items-center justify-center gap-1 transition-all duration-300 px-3 py-1 scale-90",
+              activeScreen === item.id ? "text-amber-400 bg-amber-400/10 rounded-xl" : "text-slate-500"
+            )}
+          >
+            <span className="material-symbols-outlined">{item.icon}</span>
+            <span className="text-[8px] font-bold uppercase tracking-tight">{item.label}</span>
+          </button>
+        ))}
+      </nav>
+
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <QueryClientProvider client={rootQueryClient}>
+      <AppContent />
     </QueryClientProvider>
   );
 }
+
+

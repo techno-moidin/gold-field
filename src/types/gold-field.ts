@@ -60,7 +60,7 @@ export interface LiveRateResponse {
   changePercent24h: number | null;
   high24h: number | null;
   low24h: number | null;
-  timestamp: string; // ISO String
+  timestamp: string; // ISO String from backend
   cached: boolean;
 }
 
@@ -83,23 +83,19 @@ export interface SignalResponse {
   lastUpdated: string;
 }
 
-export interface UaePremium {
-  current: number;
-  average7d: number;
-  average30d: number;
-  trend: 'increasing' | 'decreasing' | 'stable';
-  recommendation: string;
-}
-
-export interface BestTimeToBuy {
-  bestDay: string;
-  bestTime: string;
-  reason: string;
-  averagePriceDiff: number;
-}
-
-export interface MarketSummaryResponse {
-  premium: UaePremium;
-  bestTime: BestTimeToBuy;
+export interface UaeMarketSummary {
+  premium: {
+    current: number;
+    average7d: number;
+    average30d: number;
+    trend: 'increasing' | 'decreasing' | 'stable';
+    recommendation: string;
+  };
+  bestTime: {
+    bestDay: string;
+    bestTime: string;
+    reason: string;
+    averagePriceDiff: number;
+  };
   lastUpdated: string;
 }
